@@ -27,7 +27,7 @@ class conv_patch_embed (nn.Module):
         return x
         
 
-class attention (nn.Module):
+class MH_attention (nn.Module):  #multi head attention class
     def __init__(self, dim=768, n_heads=12, qkv_bias=True, att_drop_p=0., proj_drop_p=0.):
         super().__init__()
         self.dim = dim
@@ -56,16 +56,40 @@ class attention (nn.Module):
         x = self.drop_proj(x)
         return x #(s_sample, n_patches, dim)
 
-inp=torch.ones(32,196,768)
-atten = attention()
-out=atten(inp)
-print(out.shape)
+
+class MLP(nn.Module):
+    def __init__(self, in_features=dim, mlp_ratio=2, p=0.):
+        super().__init__()
+        self. Linear1 = nn.Linear(in_features, int(in_features*mlp_ratio))
+        self. act1 = nn.GELU()
+        self. Linear2 = nn.Linear(int(in_features*mlp_ratio), in_features)
+        self. drop2 = nn.Dropout(p)
+    def forward (self,x):
+        x = self.Linear1(x)
+        x = self.dop1(x)
+        x = self.Linear2(x)
+        x = self.dop2(x)
+        return x
+
+
+class attention_block(nn.module):
+    def __init__(self, mlp_ratio =2, dim=768, n_heads=12, qkv_bias=True, att_drop_p=0., proj_drop_p=0.):
+        super ().__init__()
+        self.MLP = MLP(dim,mlp_ratio=mlp_ratio, p=0)
+        self. attention = MH_attention( dim, n_heads, qkv_bias, att_drop_p, proj_drop_p)
+        self.norm1 = nn.LayerNorm(dim=-1, eps=1e-6)
+        self.norm2 = nn.LayerNorm(dim=-1, eps=1e-6)
+        
+    def forward (self,x):
+        x = x + self.attention(self.norm1(x))
+        x = x + self.MLP(self.norm2(x))
+        return x
         
          
            
         
         
-        
+
         
         
         
