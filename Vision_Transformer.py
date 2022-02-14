@@ -89,7 +89,34 @@ class attention_block(nn.module):
            
         
         
-
+class ViT (nn.Module):
+    def __init__(self, in_channels=3, image_size=224, patch_size=16, n_heads=12, qkv_bias=True, dim=768, att_drop_p=0.1, proj_drop_p=0.1, mlp_ratio=2, n_classes=1000):
+        
+        super().__init()
+        
+        self.con_patch_embed = conv_patch_embed(dim, in_channels, patch_size, image_size)
+        self.attention_block = attention_block(mlp_ratio, dim, n_heads, qkv_bias, att_drop_p, proj_drop_p)
+        self.CLS_token = nn.Parameter(torch.randn((1,1,dim)))
+        self.positional_embeding = nn.Parameter(torch.randn((1,1+conv_patch_embed.n_tokens,dim)))
+        self.fc1 = nn.Linear (dim, dim*2)
+        self.act1 = nn.ReLU()
+        self.fc2 = nn.Linear(dim*2, n_classes)
+        self.act2 = nn.ReLU()
+        
+    
+    def.forward(self, x):
+        embed = self.conv_patch_embed(x)
+        embed = torch.cat(self.CLS_token, embed)
+        attention_input = embed + self.positional_embeding
+        attention_out = self.attention_block(attention_input)
+        final_out = self_fc1(attention_out)
+        final_out = self_act1(final_out)
+        final_out = self_fc2(final_out)
+        final_out = self_act2(final_out)
+        return final_out
+        
+                                  
+    
         
         
         
